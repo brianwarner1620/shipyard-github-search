@@ -57,3 +57,27 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+
+
+## The Shipyard Coding Project
+
+This project will allow a registered user to login and access a github search page. On this page they can
+enter keyword string(s) to search github repos by. The search is done using the GitHub public api
+
+## Installation
+1. Clone the repo into a folder called shipyard-github-search
+2. npm install
+3. composer install
+4. Make sure .env DB_CONNECTION is set to mysql. You will need an empty database called 'laravel'
+5. php artisan migrate:fresh --seed
+
+6. In separate window - npm run dev
+7. In separate window - php artisan serve
+8. Web app should now be available at http://127.0.0.1:
+Make sure .env DB_CONNECTION is set to mysql
+
+php artisan migrate:fresh --seed
+
+Register a new user

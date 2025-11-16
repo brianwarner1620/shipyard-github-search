@@ -39,6 +39,12 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Dashboard
                                 </NavLink>
+                                <NavLink
+                                    :href="route('github.search')"
+                                    :active="route().current('github.search')"
+                                >
+                                    GitHub Search
+                                </NavLink>
                             </div>
                         </div>
 
