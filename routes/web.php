@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\GithubSearchController;
+use App\Http\Controllers\FavoriteReposController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +27,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/github-search', [GithubSearchController::class, 'search'])->name('github.search');
+
+    Route::get('/favorite-repos', [FavoriteReposController::class, 'index'])->name('favorite-repos.index');
 });
 
 

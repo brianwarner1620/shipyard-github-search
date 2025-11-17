@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\GithubService;
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+
 use Illuminate\Http\RedirectResponse;
 //use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,7 +26,7 @@ class GithubSearchController extends Controller
     }
 
     public function search(Request $request) {
-        $searchTerm = '*' . urldecode($request->input('searchTerm')) . '*';
+        $searchTerm = urldecode($request->input('searchTerm'));
         $sort = urldecode($request->input('sort'));
         $order = urldecode($request->input('order'));
         $perPage = urldecode($request->input('perPage'));
@@ -64,10 +63,10 @@ class GithubSearchController extends Controller
             'order' => 'desc',
         ]);*/
         $response = $this->githubService->searchGithubRepositories($searchTerm, $sort, $order, (int)$perPage, (int)$page);
- dd($response->json());
+
         return Inertia::render('GithubSearch', [
             'repositories' => $response->json(),
-            'searchTerm'   => $searchTerm
+            'page'  => (int)$page
         ]);
 
         //return $response->json();

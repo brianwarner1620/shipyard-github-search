@@ -20,7 +20,7 @@ class GithubService implements GithubServiceInterface
             $response = Http::withHeaders(['Accept' => $acceptHeader])
                 ->withToken($token)
                 ->get($searchApi, [
-                    'q'     =>  $searchTerm,
+                    'q'     =>  '*' . $searchTerm . '*',
                     'sort'  =>  $sort,
                     'order' =>  $order,
                     'per_page' => $perPage,
@@ -29,7 +29,7 @@ class GithubService implements GithubServiceInterface
         } else {
             $response = Http::withHeaders(['Accept' => $acceptHeader])
                 ->get($searchApi, [
-                    'q'     =>  $searchTerm,
+                    'q'     =>  '*' . $searchTerm . '*',
                     'sort'  =>  $sort,
                     'order' =>  $order,
                     'per_page' => $perPage,
