@@ -9,11 +9,17 @@ use Illuminate\Support\Facades\Auth;
 
 class FavoriteReposService implements FavoriteReposServiceInterface
 {
-    public function getAllFavoriteRepos()
+    public function getAllFavoriteReposByUser(string $perPage)
     {
         if (Auth::user()){
-            $favoriteRepos = FavoriteRepos::where('user_id', Auth::user()->id)->paginate(15);
-            dd($favoriteRepos['data']['items']);
+            $favoriteRepos = FavoriteRepos::paginate($perPage)->through(fn ($repo) => [
+                'id'    => $repo->id,
+                'repo_id' => $repo->repo_id,
+                'name' => $repo->name,
+                'owner' => $repo->owner,
+                'description'   => $repo->description,
+                'stargazers_count' => $repo->stargazers_count
+            ]);
             return $favoriteRepos;
         }
     }

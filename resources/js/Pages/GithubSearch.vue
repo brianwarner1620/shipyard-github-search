@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 
+import { useForm } from '@inertiajs/vue3';
 import { Head, Link } from '@inertiajs/vue3';
 import { Inertia } from '@inertiajs/inertia';
 
@@ -15,8 +16,19 @@ const tableHeaders = [
     { title: 'Owner', key: 'owner.login' },
     { title: 'Description', key: 'description' },
     { title: 'Rating', key: 'stargazers_count' },
-    { title: 'Actions', key: '' }
+    { title: 'Actions', key: 'actions', value: 'actions' },
+    { title: 'Actionable', key: 'actionable', value: false }
+
 ];
+
+const form = useForm({
+  repo_id: '',
+  name: '',
+  owner: '',
+  html_url: '',
+  description: '',
+  stargazers_count: ''
+});
 
 const search = ref('');
 const sort = ref('stars');
@@ -41,7 +53,24 @@ function searchRepositories() {
     preserveState: true, // Keep the search term in the URL across pagination
     replace: true, // Replace the current history entry
   });
-} 
+}
+function addFavoriteRepo(item) {
+  form.repo_id = item.id;
+  form.name = item.name;
+  form.owner = item.owner.login;
+  form.html_url = item.html_url;
+  form.description = item.description;
+  form.stargazers_count = item.stargazers_count;
+
+  form.post(route('favorite-repos.store'), {
+      onSuccess: () => {
+          alert('Repo was added to your favorites');
+      },
+      onError: (errors) => {
+          alert('There was an error adding the repo to your favorites');
+      },
+  });
+}
 </script>
 
 <template>
@@ -80,17 +109,9 @@ function searchRepositories() {
                       :itemsPerPage="perPage"
                       :itemsTotal="props.repositories.total_count"
                       @pageChange="handlePageChange"
+                      @actionHandler="addFavoriteRepo"
                       >
                   </PaginationTable>
-
-                  <!---<v-data-table
-                    :headers="tableHeaders"
-                    :items="favoriteRepos.data"
-                    :items-per-page=15
-                    :page="props.favoriteRepos.current_page"
-                    :items-length="props.favoriteRepos.total"
-                    @update:page="handlePageChange"
-                  ></v-data-table>-->
                 </div>
             </div>
         </div>

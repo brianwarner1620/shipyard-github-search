@@ -4,5 +4,5 @@ namespace App\Services\Interfaces;
 
 interface FavoriteReposServiceInterface
 {
-    public function getAllFavoriteRepos();
+    public function getAllFavoriteReposByUser(string $perPage);
 }

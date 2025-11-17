@@ -29,6 +29,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/github-search', [GithubSearchController::class, 'search'])->name('github.search');
 
     Route::get('/favorite-repos', [FavoriteReposController::class, 'index'])->name('favorite-repos.index');
+    Route::post('/favorite-repos', [FavoriteReposController::class, 'store'])->name('favorite-repos.store');
+    Route::delete('/favorite-repos/{itemId}', [FavoriteReposController::class, 'destroy'])->name('favorite-repos.destroy');
 });
 
 

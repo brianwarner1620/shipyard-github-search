@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { useForm } from '@inertiajs/vue3';
 import { Head, Link } from '@inertiajs/vue3';
 import { Inertia } from '@inertiajs/inertia';
 
@@ -7,15 +8,17 @@ import PaginationTable from '@/Components/PaginationTable.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 const tableHeaders = [
+    { title: '', key: '', value: 'id', class: 'd-none', cellClass: 'd-none' },
     { title: 'Repo Id', key: 'repo_id' },
     { title: 'Name', key: 'name' },
     { title: 'Owner', key: 'owner' },
     { title: 'Description', key: 'description' },
     { title: 'Rating', key: 'stargazers_count' },
-    { title: 'Actions', key: '' }
+    { title: 'Actions', key: 'actions', value: 'actions' }
 ];
 
-const perPage = ref(15);
+const form = useForm({});
+const perPage = ref(100);
 const props = defineProps({
   favoriteRepos: Object,
   page: Number,
@@ -24,10 +27,20 @@ const props = defineProps({
 
 function handlePageChange(newPage) {
   Inertia.reload({
-    only: ['repositories', 'page'],
+    only: ['repositories', 'page', 'total'],
     data: {
       page: newPage
     }
+  });
+}
+function removeFavoriteRepo(item) {
+  form.delete(route('favorite-repos.destroy', item.id), {
+      onSuccess: () => {
+          alert("Repo was removed from your favorites successfully");
+      },
+      onError: (errors) => {
+          alert("There was an error while trying to remove the repo from your favorites");
+      },
   });
 }
 
@@ -54,6 +67,7 @@ function handlePageChange(newPage) {
                       :itemsPerPage="perPage"
                       :itemsTotal=props.total
                       @pageChange="handlePageChange"
+                      @actionHandler="removeFavoriteRepo"
                       >
                   </PaginationTable>
                   </div>
