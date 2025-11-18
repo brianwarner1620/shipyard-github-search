@@ -45,6 +45,12 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     GitHub Search
                                 </NavLink>
+                                <NavLink
+                                    :href="route('favorite-repos.index')"
+                                    :active="route().current('favorite-repos.index')"
+                                >
+                                    Favorite Repos
+                                </NavLink>
                             </div>
                         </div>
 

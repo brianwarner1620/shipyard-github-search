@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed, reactive } from 'vue';
 
 import { useForm } from '@inertiajs/vue3';
 import { Head, Link } from '@inertiajs/vue3';
@@ -16,9 +16,7 @@ const tableHeaders = [
     { title: 'Owner', key: 'owner.login' },
     { title: 'Description', key: 'description' },
     { title: 'Rating', key: 'stargazers_count' },
-    { title: 'Actions', key: 'actions', value: 'actions' },
-    { title: 'Actionable', key: 'actionable', value: false }
-
+    { title: 'Actions', key: 'actions', value: 'actions' }
 ];
 
 const form = useForm({
@@ -34,13 +32,43 @@ const search = ref('');
 const sort = ref('stars');
 const order = ref('desc');
 const perPage = ref(15);
+const currentPage = ref(1);
+
+const favoritedReposList = ref([]);
 
 const props = defineProps({
   repositories: Object,
+  favoriteReposIds: Array,
   page: Number
 });
 
+function retrieveFavoritedReposListFromSessionStorage() {
+  if (sessionStorage.getItem('favoritedReposList') !== null) {
+    const reposList = sessionStorage.getItem('favoritedReposList');
+    if (reposList) {
+      favoritedReposList.value = JSON.parse(reposList);
+    } 
+  } else {
+    favoritedReposList.value = props.favoriteReposIds;
+  }
+}
+function saveFavoritedReposListToSessionStorage() {
+  sessionStorage.setItem('favoritedReposList', JSON.stringify(favoritedReposList.value));
+}
+function retrieveFavoritedReposList() {
+  const reposList = sessionStorage.getItem('favoritedReposList');
+  if (reposList) {
+    return JSON.parse(reposList);
+  }
+}
+function setFavoritedRepoId(itemId) {
+  favoritedReposList.value.push(itemId);
+}
+
+watch(favoritedReposList, saveFavoritedReposListToSessionStorage, { deep: true });
+
 function handlePageChange(newPage) {
+  currentPage.value = newPage;
   Inertia.reload({
     only: ['repositories', 'page'],
     data: {
@@ -48,11 +76,13 @@ function handlePageChange(newPage) {
     }
   });
 }
+
 function searchRepositories() {
   Inertia.get(route('github.search'), { searchTerm: search.value, sort: sort.value, order: order.value, perPage: perPage.value, page: 1 }, {
-    preserveState: true, // Keep the search term in the URL across pagination
-    replace: true, // Replace the current history entry
+    preserveState: true,
+    replace: true,
   });
+ 
 }
 function addFavoriteRepo(item) {
   form.repo_id = item.id;
@@ -64,6 +94,8 @@ function addFavoriteRepo(item) {
 
   form.post(route('favorite-repos.store'), {
       onSuccess: () => {
+          setFavoritedRepoId(item.id);
+          handlePageChange(props.page);
           alert('Repo was added to your favorites');
       },
       onError: (errors) => {
@@ -71,6 +103,8 @@ function addFavoriteRepo(item) {
       },
   });
 }
+
+retrieveFavoritedReposListFromSessionStorage();
 </script>
 
 <template>
@@ -97,7 +131,6 @@ function addFavoriteRepo(item) {
                   />
                   <PrimaryButton class="ml-5" @click="searchRepositories" :disabled="search == ''">Search</PrimaryButton>
                   
-                  <Link href="favorite-repos" class="ml-5 inline-flex items-center text-sm font-medium leading-5 text-gray-900 dark:text-gray-100">View Favorites</Link>
                  </div>
                 </div>
 
@@ -108,9 +141,11 @@ function addFavoriteRepo(item) {
                       :page="props.page"
                       :itemsPerPage="perPage"
                       :itemsTotal="props.repositories.total_count"
+                      :nonActionableItemIds="retrieveFavoritedReposList()"
+                      actionIcon="mdi-plus"
                       @pageChange="handlePageChange"
                       @actionHandler="addFavoriteRepo"
-                      >
+                  >
                   </PaginationTable>
                 </div>
             </div>

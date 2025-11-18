@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Services\GithubService;
+use App\Services\FavoriteReposService;
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 use Illuminate\Http\RedirectResponse;
 //use Illuminate\Http\Request;
@@ -16,13 +19,15 @@ use Illuminate\Http\Request;
 class GithubSearchController extends Controller
 {
     protected $githubService;
+    protected $favoriteReposService;
 
-    // Dependency inject the GithubService class
-    public function __construct(GithubService $githubService)
+    // Dependency inject the GithubService and FavoriteReposService class
+    public function __construct(GithubService $githubService, FavoriteReposService $favoriteReposService)
     {
         parent::__construct();
 
         $this->githubService = $githubService;
+        $this->favoriteReposService = $favoriteReposService;
     }
 
     public function search(Request $request) {
@@ -31,92 +36,20 @@ class GithubSearchController extends Controller
         $order = urldecode($request->input('order'));
         $perPage = urldecode($request->input('perPage'));
         $page = urldecode($request->input('page'));
-        //dd($searchTerm);
-        /*$acceptHeader = 'application/vnd.github.v3+json';
-        $token = config('services.github.personal_access_token');
-        $searchApi = "https://api.github.com/search/repositories";
+     
+        try {
+            $response = $this->githubService->searchGithubRepositories($searchTerm, $sort, $order, (int)$perPage, (int)$page);
+        } catch (Exception $e) {
+            Log::error('An error occurred: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An unexpected error occurred. Please try again.');
+        }
 
-        // A github personal access token will allow greater rate limiting. If not set
-        // then rate limiting will be reduced.
-        if ($token !== null && $token !== '') {
-            $response = Http::withHeaders(['Accept' => $acceptHeader])
-                ->withToken($token)
-                ->get($searchApi, [
-                    'q'     =>  $searchTerm,
-                    'sort'  =>  'stars',
-                    'order' =>  'desc'
-            ]);
-        } else {
-            $response = Http::withHeaders(['Accept' => $acceptHeader])
-                ->get($searchApi, [
-                    'q'     =>  $searchTerm,
-                    'sort'  =>  'stars',
-                    'order' =>  'desc'
-            ]);
-        }*/
-        /*$response = Http::withHeaders([
-            'Authorization' => 'token ' . $token,
-            'Accept' => 'application/vnd.github.v3+json',
-        ])->get('https://api.github.com/search/repositories', [
-            'q' => $keyword,
-            'sort' => 'stars',
-            'order' => 'desc',
-        ]);*/
-        $response = $this->githubService->searchGithubRepositories($searchTerm, $sort, $order, (int)$perPage, (int)$page);
+        $favoriteReposIds = $this->favoriteReposService->getAllFavoriteReposIdsByUser();
 
         return Inertia::render('GithubSearch', [
             'repositories' => $response->json(),
+            'favoriteReposIds' => $favoriteReposIds,
             'page'  => (int)$page
         ]);
-
-        //return $response->json();
     }
-
-    /**
-     * Display the user's profile form.
-     */
-    /*public function edit(Request $request): Response
-    {
-        return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
-            'status' => session('status'),
-        ]);
-    }*/
-
-    /**
-     * Update the user's profile information.
-     */
-    /*public function update(ProfileUpdateRequest $request): RedirectResponse
-    {
-        $request->user()->fill($request->validated());
-
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
-
-        $request->user()->save();
-
-        return Redirect::route('profile.edit');
-    }*/
-
-    /**
-     * Delete the user's account.
-     */
-    /*public function destroy(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'password' => ['required', 'current_password'],
-        ]);
-
-        $user = $request->user();
-
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
-    }*/
 }

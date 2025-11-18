@@ -33,5 +33,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/favorite-repos/{itemId}', [FavoriteReposController::class, 'destroy'])->name('favorite-repos.destroy');
 });
 
-
 require __DIR__.'/auth.php';

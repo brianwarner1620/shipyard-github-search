@@ -19,11 +19,32 @@ const tableHeaders = [
 
 const form = useForm({});
 const perPage = ref(100);
+const favoritedReposList = ref([]);
+
 const props = defineProps({
   favoriteRepos: Object,
   page: Number,
   total: Number
 });
+
+function retrieveFavoritedReposListFromSessionStorage() {
+  const reposList = sessionStorage.getItem('favoritedReposList');
+  if (reposList) {
+    favoritedReposList.value = JSON.parse(reposList);
+  } 
+}
+
+function saveFavoritedReposListToSessionStorage() {
+  sessionStorage.setItem('favoritedReposList', JSON.stringify(favoritedReposList.value));
+}
+
+function removeFavoritedRepoId(itemRepoId) {
+  const index = favoritedReposList.value.indexOf(parseInt(itemRepoId));
+  if (index > -1) {
+    favoritedReposList.value.splice(index, 1);
+  }
+}
+watch(favoritedReposList, saveFavoritedReposListToSessionStorage, { deep: true });
 
 function handlePageChange(newPage) {
   Inertia.reload({
@@ -36,6 +57,7 @@ function handlePageChange(newPage) {
 function removeFavoriteRepo(item) {
   form.delete(route('favorite-repos.destroy', item.id), {
       onSuccess: () => {
+          removeFavoritedRepoId(item.repo_id);
           alert("Repo was removed from your favorites successfully");
       },
       onError: (errors) => {
@@ -43,7 +65,7 @@ function removeFavoriteRepo(item) {
       },
   });
 }
-
+retrieveFavoritedReposListFromSessionStorage();
 </script>
 
 <template>
@@ -66,6 +88,7 @@ function removeFavoriteRepo(item) {
                       :page="props.page"
                       :itemsPerPage="perPage"
                       :itemsTotal=props.total
+                      actionIcon="mdi-delete"
                       @pageChange="handlePageChange"
                       @actionHandler="removeFavoriteRepo"
                       >

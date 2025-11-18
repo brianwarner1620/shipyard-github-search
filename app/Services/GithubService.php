@@ -9,7 +9,6 @@ class GithubService implements GithubServiceInterface
 {
     public function searchGithubRepositories(?string $searchTerm, ?string $sort, ?string $order, ?int $perPage, ?int $page)
     {
-        //$searchTerm = '';
         $acceptHeader = 'application/vnd.github.v3+json';
         $token = config('services.github.personal_access_token');
         $searchApi = "https://api.github.com/search/repositories";
@@ -38,14 +37,6 @@ class GithubService implements GithubServiceInterface
         }
 
         return $response;
-        /*$response = Http::withHeaders([
-            'Authorization' => 'token ' . $token,
-            'Accept' => 'application/vnd.github.v3+json',
-        ])->get('https://api.github.com/search/repositories', [
-            'q' => $keyword,
-            'sort' => 'stars',
-            'order' => 'desc',
-        ]);*/
 
     }
 

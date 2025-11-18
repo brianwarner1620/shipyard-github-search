@@ -9,10 +9,20 @@
     page: number;
     itemsPerPage: number;
     itemsTotal: number;
+    nonActionableItemIds?: any;
+    actionIcon: string;
 }>();
 
 const currentPage = ref(props.page);
 const pageCount = computed(() => Math.ceil(props.itemsTotal / props.itemsPerPage));
+
+function actionAllowed(item) {
+    if (props.nonActionableItemIds) {
+        return !props.nonActionableItemIds.includes(item.id);
+    } else {
+        return true;
+    }
+}
 
 function pageChange(newPage) {
     currentPage.value = newPage;
@@ -32,8 +42,8 @@ function clickHandler(item) {
     :items-per-page="itemsPerPage"
   >
     <template v-slot:item.actions="{ item }">
-        <v-btn small icon @click="clickHandler(item)">
-          <v-icon>mdi-delete</v-icon>
+        <v-btn v-show="actionAllowed(item)" small icon @click="clickHandler(item)">
+          <v-icon>{{$props.actionIcon}}</v-icon>
         </v-btn>
     </template>
     <template v-slot:top>

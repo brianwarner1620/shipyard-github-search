@@ -23,4 +23,32 @@ class FavoriteReposService implements FavoriteReposServiceInterface
             return $favoriteRepos;
         }
     }
+
+    public function getAllFavoriteReposIdsByUser()
+    {
+        if (Auth::user()){
+            $favoriteRepos = FavoriteRepos::where('user_id', Auth::user()->id)->get();
+
+            $favoriteReposIds = [];
+            foreach ($favoriteRepos as $item) {   
+                $favoriteReposIds[] = (int)$item->repo_id;
+            }
+
+            return $favoriteReposIds;
+        }
+    }
+
+    public function createWithData(array $data) {
+        FavoriteRepos::create($data);
+    }
+
+    public function deleteById(string $itemId) {    
+        $repos = FavoriteRepos::where('id', $itemId)->get();
+
+        foreach ($repos as $repo) {
+            $repo->delete();
+        }
+
+        $repo->delete();
+    }
 }

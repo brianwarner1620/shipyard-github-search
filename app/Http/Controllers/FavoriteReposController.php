@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Services\FavoriteReposService;
+use Illuminate\Support\Facades\Log;
+use Exception;
 
-use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Requests\StoreFavoriteRepoRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,6 +29,9 @@ class FavoriteReposController extends Controller
         $this->favoriteReposService = $favoriteReposService;
     }
 
+    /**
+     * List all favorite repos by user.
+     */
     public function index(Request $request): Response
     {
         $perPage = urldecode($request->input('perPage'));
@@ -41,32 +46,33 @@ class FavoriteReposController extends Controller
     }
 
     /**
-     * Delete the user's account.
+     * Store a favorite repo
      */
-    public function store(Request $request)
+    public function store(StoreFavoriteRepoRequest $request)
     {
-
-       $validated = $request->validate([
-        'repo_id' => 'required',
-        'name' => 'required|string|max:255',
-        'owner' => 'required',
-        'html_url' => 'required',
-        'description' => 'required',
-        'stargazers_count' => 'required'
-       ]);
+       $validated = $request->validated();
        $validated['user_id'] = Auth::user()->id;
 
-       FavoriteRepos::create($validated);
+       try {
+            $this->favoriteReposService->createWithData($validated);
+       } catch (Exception $e) {
+            Log::error('An error occurred: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An unexpected error occurred. Please try again.');
+       }
     }
 
     /**
-     * Delete the user's account.
+     * Delete a favorite repo.
      */
     public function destroy(string $itemId): RedirectResponse
     {
-        $repo = FavoriteRepos::find($itemId);
-
-        $repo->delete();
+        try {
+            $this->favoriteReposService->deleteById($itemId);
+        } catch (Exception $e) {
+            Log::error('An error occurred: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An unexpected error occurred. Please try again.');
+        }
+        
         return Redirect::to('/favorite-repos');
     }
 }
