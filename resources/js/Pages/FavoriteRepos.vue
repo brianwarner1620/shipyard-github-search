@@ -54,6 +54,7 @@ function handlePageChange(newPage) {
     }
   });
 }
+
 function removeFavoriteRepo(item) {
   form.delete(route('favorite-repos.destroy', item.id), {
       onSuccess: () => {
@@ -65,6 +66,7 @@ function removeFavoriteRepo(item) {
       },
   });
 }
+
 retrieveFavoritedReposListFromSessionStorage();
 </script>
 

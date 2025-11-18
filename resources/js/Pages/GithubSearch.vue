@@ -82,8 +82,8 @@ function searchRepositories() {
     preserveState: true,
     replace: true,
   });
- 
 }
+
 function addFavoriteRepo(item) {
   form.repo_id = item.id;
   form.name = item.name;
