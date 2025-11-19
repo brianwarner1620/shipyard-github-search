@@ -42,35 +42,20 @@ const props = defineProps({
   page: Number
 });
 
-function retrieveFavoritedReposListFromSessionStorage() {
-  if (sessionStorage.getItem('favoritedReposList') !== null) {
-    const reposList = sessionStorage.getItem('favoritedReposList');
-    if (reposList) {
-      favoritedReposList.value = JSON.parse(reposList);
-    } 
-  } else {
-    favoritedReposList.value = props.favoriteReposIds;
-  }
-}
-function saveFavoritedReposListToSessionStorage() {
-  sessionStorage.setItem('favoritedReposList', JSON.stringify(favoritedReposList.value));
-}
-function retrieveFavoritedReposList() {
-  const reposList = sessionStorage.getItem('favoritedReposList');
-  if (reposList) {
-    return JSON.parse(reposList);
-  }
-}
-function setFavoritedRepoId(itemId) {
-  favoritedReposList.value.push(itemId);
+function saveFavoritedReposList() {
+  favoritedReposList.value = props.favoriteReposIds;
 }
 
-watch(favoritedReposList, saveFavoritedReposListToSessionStorage, { deep: true });
+const isFavorited = (item) => {
+    if (favoritedReposList.value) {
+        return favoritedReposList.value.includes(item.id) ? 'delete' : 'add';
+    } 
+}
 
 function handlePageChange(newPage) {
   currentPage.value = newPage;
   Inertia.reload({
-    only: ['repositories', 'page'],
+    only: ['repositories', 'page', 'favoriteRepoIds'],
     data: {
       page: newPage
     }
@@ -94,7 +79,6 @@ function addFavoriteRepo(item) {
 
   form.post(route('favorite-repos.store'), {
       onSuccess: () => {
-          setFavoritedRepoId(item.id);
           handlePageChange(props.page);
           alert('Repo was added to your favorites');
       },
@@ -104,7 +88,19 @@ function addFavoriteRepo(item) {
   });
 }
 
-retrieveFavoritedReposListFromSessionStorage();
+function removeFavoriteRepo(item) {
+  form.delete(route('favorite-repos.destroy', item.id), {
+      onSuccess: () => {
+          handlePageChange(props.page);
+          alert("Repo was removed from your favorites successfully");
+      },
+      onError: (errors) => {
+          alert("There was an error while trying to remove the repo from your favorites");
+      },
+  });
+}
+
+saveFavoritedReposList();
 </script>
 
 <template>
@@ -141,10 +137,12 @@ retrieveFavoritedReposListFromSessionStorage();
                       :page="props.page"
                       :itemsPerPage="perPage"
                       :itemsTotal="props.repositories.total_count"
-                      :nonActionableItemIds="retrieveFavoritedReposList()"
-                      actionIcon="mdi-plus"
+                      :renderActionButton="isFavorited"
+                      addButton="mdi-plus"
+                      deleteButton="mdi-delete"
                       @pageChange="handlePageChange"
-                      @actionHandler="addFavoriteRepo"
+                      @addHandler="addFavoriteRepo"
+                      @removeHandler="removeFavoriteRepo"
                   >
                   </PaginationTable>
                 </div>

@@ -10,5 +10,5 @@ interface FavoriteReposServiceInterface
 
     public function createWithData(array $data);
     
-    public function deleteById(string $itemId);
+    public function deleteByRepoIdAndUser(string $itemId);
 }

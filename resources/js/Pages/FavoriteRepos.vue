@@ -8,7 +8,6 @@ import PaginationTable from '@/Components/PaginationTable.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 const tableHeaders = [
-    { title: '', key: '', value: 'id', class: 'd-none', cellClass: 'd-none' },
     { title: 'Repo Id', key: 'repo_id' },
     { title: 'Name', key: 'name' },
     { title: 'Owner', key: 'owner' },
@@ -27,24 +26,17 @@ const props = defineProps({
   total: Number
 });
 
-function retrieveFavoritedReposListFromSessionStorage() {
-  const reposList = sessionStorage.getItem('favoritedReposList');
-  if (reposList) {
-    favoritedReposList.value = JSON.parse(reposList);
+function saveFavoritedReposList() {
+  favoritedReposList.value = props.favoriteRepos.map(r => r.repo_id);
+}
+
+const isFavorited = (item) => {
+  if (favoritedReposList.value) {
+      if (favoritedReposList.value.includes(item.repo_id)) {
+        return 'delete';
+      }
   } 
 }
-
-function saveFavoritedReposListToSessionStorage() {
-  sessionStorage.setItem('favoritedReposList', JSON.stringify(favoritedReposList.value));
-}
-
-function removeFavoritedRepoId(itemRepoId) {
-  const index = favoritedReposList.value.indexOf(parseInt(itemRepoId));
-  if (index > -1) {
-    favoritedReposList.value.splice(index, 1);
-  }
-}
-watch(favoritedReposList, saveFavoritedReposListToSessionStorage, { deep: true });
 
 function handlePageChange(newPage) {
   Inertia.reload({
@@ -56,9 +48,8 @@ function handlePageChange(newPage) {
 }
 
 function removeFavoriteRepo(item) {
-  form.delete(route('favorite-repos.destroy', item.id), {
+  form.delete(route('favorite-repos.destroy', item.repo_id), {
       onSuccess: () => {
-          removeFavoritedRepoId(item.repo_id);
           alert("Repo was removed from your favorites successfully");
       },
       onError: (errors) => {
@@ -67,7 +58,7 @@ function removeFavoriteRepo(item) {
   });
 }
 
-retrieveFavoritedReposListFromSessionStorage();
+saveFavoritedReposList();
 </script>
 
 <template>
@@ -90,9 +81,12 @@ retrieveFavoritedReposListFromSessionStorage();
                       :page="props.page"
                       :itemsPerPage="perPage"
                       :itemsTotal=props.total
-                      actionIcon="mdi-delete"
+                      :renderActionButton="isFavorited"
+                      addButton="mdi-plus"
+                      deleteButton="mdi-delete"
                       @pageChange="handlePageChange"
                       @actionHandler="removeFavoriteRepo"
+                      @removeHandler="removeFavoriteRepo"
                       >
                   </PaginationTable>
                   </div>

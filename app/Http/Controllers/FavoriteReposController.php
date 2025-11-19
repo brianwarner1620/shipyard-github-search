@@ -64,15 +64,13 @@ class FavoriteReposController extends Controller
     /**
      * Delete a favorite repo.
      */
-    public function destroy(string $itemId): RedirectResponse
+    public function destroy(string $itemId)
     {
         try {
-            $this->favoriteReposService->deleteById($itemId);
+            $this->favoriteReposService->deleteByRepoIdAndUser($itemId);
         } catch (Exception $e) {
             Log::error('An error occurred: ' . $e->getMessage());
             return redirect()->back()->with('error', 'An unexpected error occurred. Please try again.');
         }
-        
-        return Redirect::to('/favorite-repos');
     }
 }

@@ -42,8 +42,8 @@ class FavoriteReposService implements FavoriteReposServiceInterface
         FavoriteRepos::create($data);
     }
 
-    public function deleteById(string $itemId) {    
-        $repos = FavoriteRepos::where('id', $itemId)->get();
+    public function deleteByRepoIdAndUser(string $itemId) {    
+        $repos = FavoriteRepos::where('repo_id', $itemId)->where('user_id', Auth::user()->id)->get();
 
         foreach ($repos as $repo) {
             $repo->delete();
